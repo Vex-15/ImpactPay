@@ -867,7 +867,7 @@ func (r *run) checkFinancialConsistency() {
 	if !needsFinancial {
 		r.financial.Status = "not_applicable"
 		r.financial.Notes = append(r.financial.Notes,
-		"This milestone is verified on non-financial evidence, so no budget reconciliation is required.")
+			"This milestone is verified on non-financial evidence, so no budget reconciliation is required.")
 		r.tool("check_financial_consistency", "Reconcile spend against milestone budget",
 			core.FormatMoney(core.Money(m.BudgetAmount), p.Currency), func() (string, string) {
 				return "Not applicable: no financial artefact is required for this milestone.", "ok"

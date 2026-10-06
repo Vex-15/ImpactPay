@@ -19,15 +19,15 @@ import (
 // S3Config configures the S3-compatible driver. It works against AWS S3,
 // Cloudflare R2 and MinIO by overriding the endpoint and forcing path style.
 type S3Config struct {
-	Bucket       string
-	Region       string
-	Endpoint     string // e.g. https://s3.eu-central-1.amazonaws.com
-	AccessKey    string
-	SecretKey    string
-	SessionToken string
+	Bucket         string
+	Region         string
+	Endpoint       string // e.g. https://s3.eu-central-1.amazonaws.com
+	AccessKey      string
+	SecretKey      string
+	SessionToken   string
 	ForcePathStyle bool
-	Prefix       string
-	HTTPClient   *http.Client
+	Prefix         string
+	HTTPClient     *http.Client
 }
 
 // S3 stores objects in an S3-compatible bucket. Render has an ephemeral

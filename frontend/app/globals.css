@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/*
+ * ImpactPay design tokens.
+ *
+ * The palette is deliberately restrained: neutral ink for structure, one
+ * accent for funding actions, and a small set of *semantic* colours that mean
+ * exactly one thing each. "Verified", "held" and "critical" are reserved for
+ * verification state so a reader can scan a page and trust the colour.
+ */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --color-canvas: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-subtle: #fafbfc;
+  --color-line: #e4e7ee;
+  --color-line-strong: #ccd2e0;
+
+  --color-ink: #0d1424;
+  --color-ink-soft: #465368;
+  --color-ink-faint: #7b8698;
+
+  --color-accent: #0e6f62;
+  --color-accent-strong: #0a554b;
+  --color-accent-soft: #e7f3f1;
+
+  --color-verified: #0f7a52;
+  --color-verified-soft: #e7f5ee;
+  --color-held: #9a5b06;
+  --color-held-soft: #fdf2e0;
+  --color-critical: #a02020;
+  --color-critical-soft: #fbeaea;
+  --color-info: #295b9c;
+  --color-info-soft: #ebf1fa;
+  --color-simulated: #5b4a9e;
+  --color-simulated-soft: #efecfa;
+
+  --radius-card: 0.75rem;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Financial figures use tabular numerals so columns of amounts line up. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+}
+
+/* A thin, unobtrusive scrollbar keeps evidence panels from looking busy. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}

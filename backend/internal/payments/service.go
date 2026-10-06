@@ -22,13 +22,13 @@ import (
 
 // Sentinel errors.
 var (
-	ErrDonationNotFound  = errors.New("contribution not found")
-	ErrOrderNotCreated   = errors.New("no payment order exists for this contribution")
-	ErrAlreadyCaptured   = errors.New("this contribution has already been captured")
+	ErrDonationNotFound      = errors.New("contribution not found")
+	ErrOrderNotCreated       = errors.New("no payment order exists for this contribution")
+	ErrAlreadyCaptured       = errors.New("this contribution has already been captured")
 	ErrCaptureAmountMismatch = errors.New("the captured amount does not match the contribution")
-	ErrNotCaptured       = errors.New("only a captured contribution can be refunded")
-	ErrRefundNotAllowed  = errors.New("this contribution cannot be refunded while its milestone funding is released")
-	ErrMilestoneNotFound = errors.New("milestone not found")
+	ErrNotCaptured           = errors.New("only a captured contribution can be refunded")
+	ErrRefundNotAllowed      = errors.New("this contribution cannot be refunded while its milestone funding is released")
+	ErrMilestoneNotFound     = errors.New("milestone not found")
 )
 
 // Service owns the funding state machine.
@@ -187,10 +187,10 @@ func (s *Service) CreateDonationOrder(ctx context.Context, donationID, returnURL
 
 // CaptureResult bundles the captured donation with its attribution.
 type CaptureResult struct {
-	Donation    models.Donation       `json:"donation"`
-	Capture     CaptureOutcome        `json:"capture"`
+	Donation    models.Donation        `json:"donation"`
+	Capture     CaptureOutcome         `json:"capture"`
 	Allocations []donations.Allocation `json:"allocations"`
-	Project     models.Project        `json:"project"`
+	Project     models.Project         `json:"project"`
 }
 
 // CaptureDonation captures an approved order and records the funding movement.
@@ -246,7 +246,7 @@ func (s *Service) CaptureDonation(ctx context.Context, donationID string) (*Capt
 				DonationID: d.ID, ProjectID: d.ProjectID, Type: models.EventPaymentFailed,
 				ProviderRef: capture.CaptureID, Amount: capture.Amount.Minor,
 				Currency: capture.Amount.Currency, Status: "AMOUNT_MISMATCH",
-				Detail: fmt.Sprintf("expected %d minor units, captured %d", d.Amount, capture.Amount.Minor),
+				Detail:    fmt.Sprintf("expected %d minor units, captured %d", d.Amount, capture.Amount.Minor),
 				Simulated: capture.Simulated,
 			})
 		})
@@ -293,6 +293,12 @@ func (s *Service) ApplyConfirmedCapture(ctx context.Context, donationID, capture
 
 // applyCapture performs the ledger movement for a confirmed capture.
 func (s *Service) applyCapture(ctx context.Context, d *models.Donation, p *models.Project, capture *CaptureOutcome) (*CaptureResult, error) {
+	// The organization is read before the transaction opens. Opening a second
+	// database handle while a transaction is in flight would either deadlock the
+	// single-writer connection or read a pre-transaction snapshot, so every read
+	// the transaction needs is resolved first.
+	org, orgErr := s.orgs.ByID(ctx, p.OrgID)
+
 	var allocs []donations.Allocation
 	err := s.db.RunInTx(ctx, func(tx *db.Tx) error {
 		if err := s.donations.SetCapture(ctx, tx, d.ID, capture.CaptureID, capture.Status, capture.Simulated); err != nil {
@@ -351,8 +357,7 @@ func (s *Service) applyCapture(ctx context.Context, d *models.Donation, p *model
 		}
 
 		// Tell the organization's owner that funding arrived.
-		org, err := s.orgs.ByID(ctx, p.OrgID)
-		if err == nil {
+		if orgErr == nil && org != nil {
 			_ = s.notifications.Notify(ctx, tx, org.UserID, "funding",
 				"New contribution received",
 				fmt.Sprintf("%s was contributed to '%s'.",
@@ -375,10 +380,10 @@ func (s *Service) applyCapture(ctx context.Context, d *models.Donation, p *model
 	}
 	_ = allocs
 	return &CaptureResult{
-		Donation: *updatedDonation,
-		Capture:  *capture,
+		Donation:    *updatedDonation,
+		Capture:     *capture,
 		Allocations: allocs,
-		Project:  *updatedProject,
+		Project:     *updatedProject,
 	}, nil
 }
 
@@ -555,9 +560,9 @@ func (s *Service) PaymentEvents(ctx context.Context, f EventFilter) ([]models.Pa
 	out := []models.PaymentEvent{}
 	for rows.Next() {
 		var (
-			e         models.PaymentEvent
-			typ, cAt  string
-			sim       int
+			e        models.PaymentEvent
+			typ, cAt string
+			sim      int
 		)
 		if err := rows.Scan(&e.ID, &e.DonationID, &e.ProjectID, &e.MilestoneID, &typ,
 			&e.Provider, &e.ProviderRef, &e.Amount, &e.Currency, &e.Status, &e.Detail,
@@ -670,7 +675,7 @@ func (s *Service) ProcessWebhook(ctx context.Context, headers http.Header, rawBo
 		EntityType: "webhook",
 		EntityID:   rec.ID,
 		Severity:   severityForWebhook(verified),
-		Summary: fmt.Sprintf("PayPal webhook %s: %s (%s)", status, eventType, resID),
+		Summary:    fmt.Sprintf("PayPal webhook %s: %s (%s)", status, eventType, resID),
 		Data:       map[string]any{"event_type": eventType, "verified": verified, "resource_id": resID},
 	}); aerr != nil {
 		return rec, aerr

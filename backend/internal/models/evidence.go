@@ -44,38 +44,38 @@ type EvidenceSubmission struct {
 
 // Evidence is a stored artefact with its extracted structured facts.
 type Evidence struct {
-	ID             string       `json:"id"`
-	SubmissionID   string       `json:"submission_id"`
-	MilestoneID    string       `json:"milestone_id"`
-	ProjectID      string       `json:"project_id"`
-	UploadedBy     string       `json:"uploaded_by"`
-	Kind           EvidenceKind `json:"kind"`
-	RequirementKey string       `json:"requirement_key"`
-	Filename       string       `json:"filename"`
-	MimeType       string       `json:"mime_type"`
-	SizeBytes      int64        `json:"size_bytes"`
-	StorageKey     string       `json:"-"`
-	ContentHash    string       `json:"content_hash"`
-	Description    string       `json:"description"`
-	Declared       EvidenceHints `json:"declared"`
+	ID             string         `json:"id"`
+	SubmissionID   string         `json:"submission_id"`
+	MilestoneID    string         `json:"milestone_id"`
+	ProjectID      string         `json:"project_id"`
+	UploadedBy     string         `json:"uploaded_by"`
+	Kind           EvidenceKind   `json:"kind"`
+	RequirementKey string         `json:"requirement_key"`
+	Filename       string         `json:"filename"`
+	MimeType       string         `json:"mime_type"`
+	SizeBytes      int64          `json:"size_bytes"`
+	StorageKey     string         `json:"-"`
+	ContentHash    string         `json:"content_hash"`
+	Description    string         `json:"description"`
+	Declared       EvidenceHints  `json:"declared"`
 	Extracted      ExtractedFacts `json:"extracted"`
-	CreatedAt      time.Time    `json:"created_at"`
+	CreatedAt      time.Time      `json:"created_at"`
 }
 
 // EvidenceHints are the structured facts the uploader asserted alongside the
 // file. They are treated as *claims* by the verification pipeline and are always
 // cross-checked against the artefact itself, never trusted outright.
 type EvidenceHints struct {
-	UnitIDs     []string `json:"unit_ids,omitempty"`
-	Location    string   `json:"location,omitempty"`
-	CapturedAt  string   `json:"captured_at,omitempty"`
-	Villages    []string `json:"villages,omitempty"`
-	AmountMinor int64    `json:"amount_minor,omitempty"`
-	Quantity    int      `json:"quantity,omitempty"`
-	UnitLabel   string   `json:"unit_label,omitempty"`
-	InvoiceNo   string   `json:"invoice_number,omitempty"`
-	Vendor      string   `json:"vendor,omitempty"`
-	Beneficiaries int    `json:"beneficiaries,omitempty"`
+	UnitIDs       []string `json:"unit_ids,omitempty"`
+	Location      string   `json:"location,omitempty"`
+	CapturedAt    string   `json:"captured_at,omitempty"`
+	Villages      []string `json:"villages,omitempty"`
+	AmountMinor   int64    `json:"amount_minor,omitempty"`
+	Quantity      int      `json:"quantity,omitempty"`
+	UnitLabel     string   `json:"unit_label,omitempty"`
+	InvoiceNo     string   `json:"invoice_number,omitempty"`
+	Vendor        string   `json:"vendor,omitempty"`
+	Beneficiaries int      `json:"beneficiaries,omitempty"`
 }
 
 // ExtractedFacts is the structured output of the extraction stage of the

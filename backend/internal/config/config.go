@@ -19,22 +19,22 @@ type Config struct {
 	PublicURL string
 
 	// Database
-	DatabaseURL   string
-	SQLitePath    string
-	DBDriver      string // "sqlite" | "postgres"
-	AutoMigrate   bool
-	SeedDemo      bool
+	DatabaseURL string
+	SQLitePath  string
+	DBDriver    string // "sqlite" | "postgres"
+	AutoMigrate bool
+	SeedDemo    bool
 
 	// Auth
-	SessionTTL   time.Duration
-	SessionCookie string
-	CookieSecure bool
+	SessionTTL     time.Duration
+	SessionCookie  string
+	CookieSecure   bool
 	AllowedOrigins []string
 
 	// Storage
-	StorageDriver string // "local" | "s3"
+	StorageDriver   string // "local" | "s3"
 	StorageLocalDir string
-	MaxUploadBytes int64
+	MaxUploadBytes  int64
 
 	// PayPal
 	PayPalClientID     string
@@ -42,13 +42,18 @@ type Config struct {
 	PayPalBaseURL      string
 	PayPalWebhookID    string
 	PayPalCurrency     string
+	// PayPalFXRateINRPerUSD is the configured *indicative* rate used to convert a
+	// project-currency budget into the PayPal account currency. It is never
+	// presented as a live market rate; the rate and both amounts are stored on
+	// every release.
+	PayPalFXRateINRPerUSD float64
 
 	// AI
-	AIProvider  string // "deterministic" | "openai" | "anthropic"
-	AIAPIKey    string
-	AIModel     string
-	AIBaseURL   string
-	AITimeout   time.Duration
+	AIProvider string // "deterministic" | "openai" | "anthropic"
+	AIAPIKey   string
+	AIModel    string
+	AIBaseURL  string
+	AITimeout  time.Duration
 }
 
 // Load reads configuration from the process environment.
@@ -77,6 +82,7 @@ func Load() (*Config, error) {
 		PayPalBaseURL:      env("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com"),
 		PayPalWebhookID:    strings.TrimSpace(os.Getenv("PAYPAL_WEBHOOK_ID")),
 		PayPalCurrency:     env("PAYPAL_CURRENCY", "USD"),
+		PayPalFXRateINRPerUSD: envFloat("PAYPAL_FX_RATE_INR_PER_USD", 83.00),
 
 		AIProvider: env("AI_PROVIDER", ""),
 		AIAPIKey:   strings.TrimSpace(os.Getenv("AI_API_KEY")),
@@ -150,6 +156,18 @@ func envBool(k string, def bool) bool {
 		return def
 	}
 	return b
+}
+
+func envFloat(k string, def float64) float64 {
+	v := strings.TrimSpace(os.Getenv(k))
+	if v == "" {
+		return def
+	}
+	f, err := strconv.ParseFloat(v, 64)
+	if err != nil || f <= 0 {
+		return def
+	}
+	return f
 }
 
 func envInt64(k string, def int64) int64 {

@@ -382,10 +382,10 @@ type rowScanner interface{ Scan(dest ...any) error }
 
 func (s *Service) scanRows(row rowScanner) (*models.Milestone, error) {
 	var (
-		m                                          models.Milestone
-		evidenceJSON, status                       string
-		createdAt, updatedAt                       string
-		startedAt, submittedAt, decidedAt, doneAt  sql.NullString
+		m                                         models.Milestone
+		evidenceJSON, status                      string
+		createdAt, updatedAt                      string
+		startedAt, submittedAt, decidedAt, doneAt sql.NullString
 	)
 	if err := row.Scan(
 		&m.ID, &m.ProjectID, &m.Ordinal, &m.Title, &m.Description, &m.Requirement,

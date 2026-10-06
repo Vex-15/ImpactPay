@@ -52,18 +52,18 @@ type MilestoneFunding struct {
 type PaymentEventType string
 
 const (
-	EventOrderCreated       PaymentEventType = "PAYPAL_ORDER_CREATED"
-	EventOrderApproved      PaymentEventType = "PAYPAL_ORDER_APPROVED"
-	EventPaymentCaptured    PaymentEventType = "PAYPAL_PAYMENT_COMPLETED"
-	EventPaymentFailed      PaymentEventType = "PAYPAL_PAYMENT_FAILED"
-	EventWebhookReceived    PaymentEventType = "PAYPAL_WEBHOOK_RECEIVED"
-	EventRefundRequested    PaymentEventType = "REFUND_REQUESTED"
-	EventRefundCompleted    PaymentEventType = "REFUND_EXECUTED"
-	EventReleaseAttempted   PaymentEventType = "PAYMENT_ACTION_ATTEMPTED"
-	EventReleaseCompleted   PaymentEventType = "PAYMENT_ACTION_EXECUTED"
-	EventReleaseBlocked     PaymentEventType = "PAYMENT_ACTION_BLOCKED"
-	EventPayoutCompleted    PaymentEventType = "PAYOUT_EXECUTED"
-	EventFundingAllocated   PaymentEventType = "FUNDING_ALLOCATED"
+	EventOrderCreated     PaymentEventType = "PAYPAL_ORDER_CREATED"
+	EventOrderApproved    PaymentEventType = "PAYPAL_ORDER_APPROVED"
+	EventPaymentCaptured  PaymentEventType = "PAYPAL_PAYMENT_COMPLETED"
+	EventPaymentFailed    PaymentEventType = "PAYPAL_PAYMENT_FAILED"
+	EventWebhookReceived  PaymentEventType = "PAYPAL_WEBHOOK_RECEIVED"
+	EventRefundRequested  PaymentEventType = "REFUND_REQUESTED"
+	EventRefundCompleted  PaymentEventType = "REFUND_EXECUTED"
+	EventReleaseAttempted PaymentEventType = "PAYMENT_ACTION_ATTEMPTED"
+	EventReleaseCompleted PaymentEventType = "PAYMENT_ACTION_EXECUTED"
+	EventReleaseBlocked   PaymentEventType = "PAYMENT_ACTION_BLOCKED"
+	EventPayoutCompleted  PaymentEventType = "PAYOUT_EXECUTED"
+	EventFundingAllocated PaymentEventType = "FUNDING_ALLOCATED"
 )
 
 // PaymentEvent is an append-only financial log entry. It complements audit_events
@@ -100,10 +100,10 @@ const (
 type MilestonePaymentStatus string
 
 const (
-	MsPaymentPending  MilestonePaymentStatus = "PENDING"
-	MsPaymentExecuted MilestonePaymentStatus = "EXECUTED"
-	MsPaymentBlocked  MilestonePaymentStatus = "BLOCKED"
-	MsPaymentFailed   MilestonePaymentStatus = "FAILED"
+	MsPaymentPending   MilestonePaymentStatus = "PENDING"
+	MsPaymentExecuted  MilestonePaymentStatus = "EXECUTED"
+	MsPaymentBlocked   MilestonePaymentStatus = "BLOCKED"
+	MsPaymentFailed    MilestonePaymentStatus = "FAILED"
 	MsPaymentSimulated MilestonePaymentStatus = "SIMULATED"
 )
 

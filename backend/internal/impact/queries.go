@@ -133,7 +133,7 @@ func (s *Service) fundingsWithMilestones(ctx context.Context, donationID string)
 	}{}
 	for rows.Next() {
 		var (
-			entry                struct {
+			entry struct {
 				Funding   models.MilestoneFunding
 				Milestone models.Milestone
 			}
@@ -210,9 +210,12 @@ func (s *Service) latestVerification(ctx context.Context, milestoneID string) (*
 		missing, checks        string
 		resultJSON, summary    string
 		isOverride             int
-		humanDecision          sql.NullString
-		decidedAt              sql.NullString
-		createdAt              string
+		// NULL until a human override happens, so all three are nullable scans.
+		humanDecision sql.NullString
+		humanNote     sql.NullString
+		decidedBy     sql.NullString
+		decidedAt     sql.NullString
+		createdAt     string
 	)
 	err := s.db.QueryRowContext(ctx, `
 		SELECT id, milestone_id, project_id, submission_id, status, recommendation,
@@ -225,13 +228,15 @@ func (s *Service) latestVerification(ctx context.Context, milestoneID string) (*
 		Scan(&v.ID, &v.MilestoneID, &v.ProjectID, &v.SubmissionID, &status, &recommendation,
 			&v.VerifiedQuantity, &v.RequiredQuantity, &v.UnitLabel, &v.Confidence, &claimed,
 			&found, &inc, &missing, &checks, &resultJSON, &summary, &v.Engine, &v.Model,
-			&isOverride, &humanDecision, &v.HumanNote, &v.DecidedBy, &decidedAt, &createdAt)
+			&isOverride, &humanDecision, &humanNote, &decidedBy, &decidedAt, &createdAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("impact: latest verification: %w", err)
 	}
+	v.HumanNote = humanNote.String
+	v.DecidedBy = decidedBy.String
 	v.Status = models.VerificationDecision(status)
 	v.Recommendation = models.VerificationDecision(recommendation)
 	v.Summary = summary
@@ -295,9 +300,9 @@ func (s *Service) evidenceStatsForProject(ctx context.Context, projectID string)
 	out := map[string]MilestoneEvidenceStat{}
 	for rows.Next() {
 		var (
-			id                        string
-			reqJSON                   string
-			total, distinctHashes     int
+			id                    string
+			reqJSON               string
+			total, distinctHashes int
 		)
 		if err := rows.Scan(&id, &reqJSON, &total, &distinctHashes); err != nil {
 			return nil, err

@@ -24,14 +24,14 @@ import (
 
 // Sentinel errors, surfaced to the API layer as 400/413/415 responses.
 var (
-	ErrNotFound          = errors.New("evidence not found")
+	ErrNotFound           = errors.New("evidence not found")
 	ErrSubmissionNotFound = errors.New("evidence submission not found")
-	ErrKindRequired      = errors.New("evidence type is required")
-	ErrInvalidKind       = errors.New("unsupported evidence type")
-	ErrEmptyFile         = errors.New("the uploaded file is empty")
-	ErrFileTooLarge      = errors.New("the uploaded file exceeds the size limit")
-	ErrUnsupportedType   = errors.New("that file type is not accepted as evidence")
-	ErrFilenameRequired  = errors.New("a filename is required")
+	ErrKindRequired       = errors.New("evidence type is required")
+	ErrInvalidKind        = errors.New("unsupported evidence type")
+	ErrEmptyFile          = errors.New("the uploaded file is empty")
+	ErrFileTooLarge       = errors.New("the uploaded file exceeds the size limit")
+	ErrUnsupportedType    = errors.New("that file type is not accepted as evidence")
+	ErrFilenameRequired   = errors.New("a filename is required")
 )
 
 // ValidKinds lists the accepted evidence types.
@@ -190,12 +190,12 @@ func (s *Service) Add(ctx context.Context, in UploadInput) (*models.Evidence, er
 			Summary: fmt.Sprintf("Uploaded %s '%s' (%s)", strings.ToLower(string(ev.Kind)),
 				ev.Filename, humanBytes(ev.SizeBytes)),
 			Data: map[string]any{
-				"kind":           string(ev.Kind),
-				"requirement":    ev.RequirementKey,
-				"size_bytes":     ev.SizeBytes,
-				"content_hash":   ev.ContentHash,
-				"extracted_ids":  len(ev.Extracted.UnitIDs),
-				"quality":        ev.Extracted.Quality,
+				"kind":          string(ev.Kind),
+				"requirement":   ev.RequirementKey,
+				"size_bytes":    ev.SizeBytes,
+				"content_hash":  ev.ContentHash,
+				"extracted_ids": len(ev.Extracted.UnitIDs),
+				"quality":       ev.Extracted.Quality,
 			},
 		})
 		return err
@@ -308,13 +308,13 @@ func (s *Service) ListSubmissions(ctx context.Context, milestoneID string) ([]mo
 
 // RequirementsCoverage summarises which declared requirements have artefacts.
 type RequirementsCoverage struct {
-	Key      string `json:"key"`
-	Label    string `json:"label"`
-	Kind     string `json:"kind"`
-	Required bool   `json:"required"`
-	MinCount int    `json:"min_count"`
-	Found    int    `json:"found"`
-	Satisfied bool  `json:"satisfied"`
+	Key       string `json:"key"`
+	Label     string `json:"label"`
+	Kind      string `json:"kind"`
+	Required  bool   `json:"required"`
+	MinCount  int    `json:"min_count"`
+	Found     int    `json:"found"`
+	Satisfied bool   `json:"satisfied"`
 }
 
 // Coverage counts artefacts per declared requirement.
@@ -356,10 +356,10 @@ func (s *Service) scan(row rowScanner) (*models.Evidence, error) {
 
 func (s *Service) scanRows(row rowScanner) (*models.Evidence, error) {
 	var (
-		e                    models.Evidence
-		kind                 string
-		declared, extracted  string
-		createdAt            string
+		e                   models.Evidence
+		kind                string
+		declared, extracted string
+		createdAt           string
 	)
 	if err := row.Scan(&e.ID, &e.SubmissionID, &e.MilestoneID, &e.ProjectID, &e.UploadedBy,
 		&kind, &e.RequirementKey, &e.Filename, &e.MimeType, &e.SizeBytes, &e.StorageKey,

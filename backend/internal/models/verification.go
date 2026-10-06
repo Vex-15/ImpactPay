@@ -8,9 +8,9 @@ import "time"
 type VerificationDecision string
 
 const (
-	DecisionApprove       VerificationDecision = "APPROVE"
-	DecisionHold          VerificationDecision = "HOLD"
-	DecisionRequestMore   VerificationDecision = "REQUEST_MORE_EVIDENCE"
+	DecisionApprove     VerificationDecision = "APPROVE"
+	DecisionHold        VerificationDecision = "HOLD"
+	DecisionRequestMore VerificationDecision = "REQUEST_MORE_EVIDENCE"
 )
 
 // Verification is a persisted run of the verification pipeline over one evidence
@@ -26,21 +26,21 @@ type Verification struct {
 	RequiredQuantity int                  `json:"required_quantity"`
 	UnitLabel        string               `json:"unit_label"`
 	Confidence       float64              `json:"confidence"`
-	Claimed          []Claim               `json:"claimed"`
-	EvidenceFound    []EvidenceFinding     `json:"evidence_found"`
-	Inconsistencies  []Inconsistency       `json:"inconsistencies"`
-	MissingEvidence  []MissingEvidence     `json:"missing_evidence"`
-	Checks           []VerificationCheck   `json:"checks"`
-	Result           VerificationResult    `json:"result"`
-	Summary          string                `json:"summary"`
-	Engine           string                `json:"engine"`
-	Model            string                `json:"model"`
-	IsOverride       bool                  `json:"is_override"`
-	HumanDecision    string                `json:"human_decision,omitempty"`
-	HumanNote        string                `json:"human_note,omitempty"`
-	DecidedBy        string                `json:"decided_by,omitempty"`
-	DecidedAt        *time.Time            `json:"decided_at,omitempty"`
-	CreatedAt        time.Time             `json:"created_at"`
+	Claimed          []Claim              `json:"claimed"`
+	EvidenceFound    []EvidenceFinding    `json:"evidence_found"`
+	Inconsistencies  []Inconsistency      `json:"inconsistencies"`
+	MissingEvidence  []MissingEvidence    `json:"missing_evidence"`
+	Checks           []VerificationCheck  `json:"checks"`
+	Result           VerificationResult   `json:"result"`
+	Summary          string               `json:"summary"`
+	Engine           string               `json:"engine"`
+	Model            string               `json:"model"`
+	IsOverride       bool                 `json:"is_override"`
+	HumanDecision    string               `json:"human_decision,omitempty"`
+	HumanNote        string               `json:"human_note,omitempty"`
+	DecidedBy        string               `json:"decided_by,omitempty"`
+	DecidedAt        *time.Time           `json:"decided_at,omitempty"`
+	CreatedAt        time.Time            `json:"created_at"`
 }
 
 // Claim is what the organization says it did for this milestone.
@@ -53,17 +53,17 @@ type Claim struct {
 
 // EvidenceFinding describes what the pipeline found in one artefact.
 type EvidenceFinding struct {
-	EvidenceID   string   `json:"evidence_id"`
-	Filename     string   `json:"filename"`
-	Kind         string   `json:"kind"`
-	Requirement  string   `json:"requirement_key,omitempty"`
-	Summary      string   `json:"summary"`
-	UnitIDs      []string `json:"unit_ids,omitempty"`
-	AmountMinor  int64    `json:"amount_minor,omitempty"`
-	Usable       bool     `json:"usable"`
-	Confidence   float64  `json:"confidence"`
-	DuplicateOf  string   `json:"duplicate_of,omitempty"`
-	Issue        string   `json:"issue,omitempty"`
+	EvidenceID  string   `json:"evidence_id"`
+	Filename    string   `json:"filename"`
+	Kind        string   `json:"kind"`
+	Requirement string   `json:"requirement_key,omitempty"`
+	Summary     string   `json:"summary"`
+	UnitIDs     []string `json:"unit_ids,omitempty"`
+	AmountMinor int64    `json:"amount_minor,omitempty"`
+	Usable      bool     `json:"usable"`
+	Confidence  float64  `json:"confidence"`
+	DuplicateOf string   `json:"duplicate_of,omitempty"`
+	Issue       string   `json:"issue,omitempty"`
 }
 
 // Inconsistency is a detected contradiction between claim and evidence.
@@ -135,22 +135,22 @@ type VerificationResult struct {
 	MilestoneID      string               `json:"milestone_id"`
 	ProjectID        string               `json:"project_id"`
 	SubmissionID     string               `json:"submission_id"`
-	Claimed          []Claim               `json:"claimed"`
-	EvidenceFound    []EvidenceFinding     `json:"evidence_found"`
+	Claimed          []Claim              `json:"claimed"`
+	EvidenceFound    []EvidenceFinding    `json:"evidence_found"`
 	VerifiedQuantity int                  `json:"verified_quantity"`
 	RequiredQuantity int                  `json:"required_quantity"`
 	UnitLabel        string               `json:"unit_label"`
 	VerifiedUnitIDs  []string             `json:"verified_unit_ids"`
 	Duplicates       []DuplicateGroup     `json:"duplicates"`
-	MissingEvidence  []MissingEvidence     `json:"missing_evidence"`
-	Inconsistencies  []Inconsistency       `json:"inconsistencies"`
-	Financial        FinancialCheck        `json:"financial"`
-	Checks           []VerificationCheck   `json:"checks"`
+	MissingEvidence  []MissingEvidence    `json:"missing_evidence"`
+	Inconsistencies  []Inconsistency      `json:"inconsistencies"`
+	Financial        FinancialCheck       `json:"financial"`
+	Checks           []VerificationCheck  `json:"checks"`
 	Confidence       float64              `json:"confidence"`
 	Recommendation   VerificationDecision `json:"recommendation"`
 	Summary          string               `json:"summary"`
 	NextAction       string               `json:"next_action"`
-	Steps            []VerificationStep    `json:"steps"`
+	Steps            []VerificationStep   `json:"steps"`
 	Engine           string               `json:"engine"`
 	Model            string               `json:"model"`
 	Cumulative       bool                 `json:"cumulative"`

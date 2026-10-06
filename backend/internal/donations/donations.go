@@ -267,7 +267,7 @@ func (s *Service) Allocate(ctx context.Context, ex db.Executor, projectID, donat
 			EntityID:   donationID,
 			ProjectID:  projectID,
 			DonationID: donationID,
-			Summary: fmt.Sprintf("Contribution allocated across %d milestone(s)", len(out)),
+			Summary:    fmt.Sprintf("Contribution allocated across %d milestone(s)", len(out)),
 			Data: map[string]any{
 				"allocations": out,
 				"amount":      amount,
@@ -337,10 +337,10 @@ func (s *Service) FundingsForDonation(ctx context.Context, donationID string) ([
 	out := []Funding{}
 	for rows.Next() {
 		var (
-			f        Funding
-			created  string
-			ev       string
-			msStatus string
+			f                    Funding
+			created              string
+			ev                   string
+			msStatus             string
 			msCreated, msUpdated string
 		)
 		if err := rows.Scan(
@@ -441,12 +441,12 @@ func (s *Service) FundingHistory(ctx context.Context, projectID string, limit in
 	out := []WithDonor{}
 	for rows.Next() {
 		var (
-			wd                                          WithDonor
-			d                                           models.Donation
-			status                                      string
-			createdAt, updatedAt                        string
-			capturedAt, refundedAt                      sql.NullString
-			simulated                                   int
+			wd                     WithDonor
+			d                      models.Donation
+			status                 string
+			createdAt, updatedAt   string
+			capturedAt, refundedAt sql.NullString
+			simulated              int
 		)
 		if err := rows.Scan(
 			&d.ID, &d.ProjectID, &d.DonorID, &d.Amount, &d.Currency, &status,
@@ -515,11 +515,11 @@ type rowScanner interface{ Scan(dest ...any) error }
 
 func (s *Service) scan(row rowScanner) (*models.Donation, error) {
 	var (
-		d                          models.Donation
-		status                     string
-		createdAt, updatedAt       string
-		capturedAt, refundedAt     sql.NullString
-		simulated                  int
+		d                      models.Donation
+		status                 string
+		createdAt, updatedAt   string
+		capturedAt, refundedAt sql.NullString
+		simulated              int
 	)
 	if err := row.Scan(
 		&d.ID, &d.ProjectID, &d.DonorID, &d.Amount, &d.Currency, &status,

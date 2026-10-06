@@ -9,11 +9,11 @@ import (
 
 // ReleaseContext is everything the policy needs to judge a conditional release.
 type ReleaseContext struct {
-	Project      *models.Project
-	Milestone    *models.Milestone
-	Organization *models.Organization
-	Verification *models.Verification
-	AllocatedMinor int64
+	Project         *models.Project
+	Milestone       *models.Milestone
+	Organization    *models.Organization
+	Verification    *models.Verification
+	AllocatedMinor  int64
 	AlreadyReleased bool
 }
 
@@ -126,11 +126,18 @@ func EvaluateRelease(c ReleaseContext) ReleaseDecision {
 		projectStatusDetail(p))
 
 	// The releasable amount is the smallest of what the milestone budget allows,
-	// what donors actually attributed to it, and what the project still holds
-	// unreserved. This is why the release figure is always defensible.
+	// what donors actually attributed to it, and what the project has captured but
+	// not yet paid out.
+	//
+	// The last bound is funded-minus-released rather than funded-minus-reserved,
+	// because a milestone's own approval reserves exactly the sum being released:
+	// netting reservations would cap every release at whatever was left over after
+	// its own commitment. Attribution already guarantees soundness — the sum of a
+	// project's allocations never exceeds its captured funding — so this bound only
+	// guards against releasing the same captured money twice.
 	available := int64(0)
 	if p != nil {
-		available = p.AvailableAmount()
+		available = p.FundedAmount - p.ReleasedAmount
 		if available < 0 {
 			available = 0
 		}
@@ -147,7 +154,7 @@ func EvaluateRelease(c ReleaseContext) ReleaseDecision {
 	}
 	add("releasable_amount", "A positive releasable amount is available",
 		amount > 0,
-		fmt.Sprintf("%s releasable (budget %s, attributed %s, unreserved %s)",
+		fmt.Sprintf("%s releasable (budget %s, attributed %s, captured and unreleased %s)",
 			core.FormatMoney(core.Money(amount), currencyOf(p)),
 			core.FormatMoney(core.Money(budget), currencyOf(p)),
 			core.FormatMoney(core.Money(allocated), currencyOf(p)),

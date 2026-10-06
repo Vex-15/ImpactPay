@@ -90,18 +90,18 @@ func (s *Service) factsFor(g *ProofGraph) (map[string]any, []Citation) {
 	d := g.Donation
 	cur := d.Currency
 	facts := map[string]any{
-		"contribution_minor": d.Amount,
-		"contribution":       core.FormatMoney(core.Money(d.Amount), cur),
-		"currency":           cur,
-		"donation_status":    string(d.Status),
-		"project":            g.Project.Title,
-		"organization":       g.Organization.Name,
+		"contribution_minor":    d.Amount,
+		"contribution":          core.FormatMoney(core.Money(d.Amount), cur),
+		"currency":              cur,
+		"donation_status":       string(d.Status),
+		"project":               g.Project.Title,
+		"organization":          g.Organization.Name,
 		"organization_verified": g.Organization.Verified,
 		"project_funded_minor":  g.Project.FundedAmount,
 		"project_goal_minor":    g.Project.GoalAmount,
-		"verified_minor":      g.VerifiedShare.VerifiedMinor,
-		"pending_minor":       g.VerifiedShare.PendingMinor,
-		"held_minor":          g.VerifiedShare.HeldMinor,
+		"verified_minor":        g.VerifiedShare.VerifiedMinor,
+		"pending_minor":         g.VerifiedShare.PendingMinor,
+		"held_minor":            g.VerifiedShare.HeldMinor,
 	}
 
 	citations := []Citation{

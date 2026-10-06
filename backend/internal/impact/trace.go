@@ -31,16 +31,16 @@ func New(database *db.DB) *Service { return &Service{db: database} }
 type NodeType string
 
 const (
-	NodeDonation    NodeType = "DONATION"
-	NodeProject     NodeType = "PROJECT"
-	NodeFund        NodeType = "PROJECT_FUND"
-	NodeMilestone   NodeType = "MILESTONE"
-	NodeResource    NodeType = "RESOURCE"
-	NodeExpense     NodeType = "EXPENSE"
-	NodeEvidence    NodeType = "EVIDENCE"
+	NodeDonation     NodeType = "DONATION"
+	NodeProject      NodeType = "PROJECT"
+	NodeFund         NodeType = "PROJECT_FUND"
+	NodeMilestone    NodeType = "MILESTONE"
+	NodeResource     NodeType = "RESOURCE"
+	NodeExpense      NodeType = "EXPENSE"
+	NodeEvidence     NodeType = "EVIDENCE"
 	NodeVerification NodeType = "VERIFICATION"
-	NodeOutcome     NodeType = "OUTCOME"
-	NodeBeneficiary NodeType = "BENEFICIARY"
+	NodeOutcome      NodeType = "OUTCOME"
+	NodeBeneficiary  NodeType = "BENEFICIARY"
 )
 
 // Metric is a labelled figure shown on a node.
@@ -71,17 +71,17 @@ type EvidenceRef struct {
 
 // Node is one vertex of the Proof Graph.
 type Node struct {
-	ID       string         `json:"id"`
-	Type     NodeType       `json:"type"`
-	Title    string         `json:"title"`
-	Subtitle string         `json:"subtitle"`
-	Status   string         `json:"status"`
-	Verified bool           `json:"verified"`
-	AmountMinor int64       `json:"amount_minor"`
-	Currency string         `json:"currency"`
-	Metrics  []Metric       `json:"metrics"`
-	Evidence []EvidenceRef  `json:"evidence"`
-	Detail   string         `json:"detail"`
+	ID          string        `json:"id"`
+	Type        NodeType      `json:"type"`
+	Title       string        `json:"title"`
+	Subtitle    string        `json:"subtitle"`
+	Status      string        `json:"status"`
+	Verified    bool          `json:"verified"`
+	AmountMinor int64         `json:"amount_minor"`
+	Currency    string        `json:"currency"`
+	Metrics     []Metric      `json:"metrics"`
+	Evidence    []EvidenceRef `json:"evidence"`
+	Detail      string        `json:"detail"`
 }
 
 // Edge is one link of the Proof Graph.
@@ -93,22 +93,22 @@ type Edge struct {
 
 // ProofGraph is the complete interactive trace for one donation.
 type ProofGraph struct {
-	Donation       models.Donation   `json:"donation"`
-	Project        models.Project    `json:"project"`
-	Organization   OrgSummary        `json:"organization"`
-	Nodes          []Node            `json:"nodes"`
-	Edges          []Edge            `json:"edges"`
-	Summary        string            `json:"summary"`
-	VerifiedShare  ShareBreakdown    `json:"verified_share"`
-	AllocationNote string            `json:"allocation_note"`
+	Donation       models.Donation `json:"donation"`
+	Project        models.Project  `json:"project"`
+	Organization   OrgSummary      `json:"organization"`
+	Nodes          []Node          `json:"nodes"`
+	Edges          []Edge          `json:"edges"`
+	Summary        string          `json:"summary"`
+	VerifiedShare  ShareBreakdown  `json:"verified_share"`
+	AllocationNote string          `json:"allocation_note"`
 }
 
 // ShareBreakdown separates a donation into what is verified and what is pending.
 type ShareBreakdown struct {
-	TotalMinor    int64 `json:"total_minor"`
-	VerifiedMinor int64 `json:"verified_minor"`
-	PendingMinor  int64 `json:"pending_minor"`
-	HeldMinor     int64 `json:"held_minor"`
+	TotalMinor    int64  `json:"total_minor"`
+	VerifiedMinor int64  `json:"verified_minor"`
+	PendingMinor  int64  `json:"pending_minor"`
+	HeldMinor     int64  `json:"held_minor"`
 	Currency      string `json:"currency"`
 }
 
@@ -142,11 +142,11 @@ func (s *Service) Trace(ctx context.Context, donationID string) (*ProofGraph, er
 	}
 
 	g := &ProofGraph{
-		Donation:     *d,
-		Project:      *p,
-		Organization: *org,
-		Nodes:        []Node{},
-		Edges:        []Edge{},
+		Donation:      *d,
+		Project:       *p,
+		Organization:  *org,
+		Nodes:         []Node{},
+		Edges:         []Edge{},
 		VerifiedShare: ShareBreakdown{TotalMinor: d.Amount, Currency: d.Currency},
 	}
 
@@ -189,14 +189,14 @@ func (s *Service) Trace(ctx context.Context, donationID string) (*ProofGraph, er
 
 	fundNodeID := "project_fund"
 	g.Nodes = append(g.Nodes, Node{
-		ID:       fundNodeID,
-		Type:     NodeFund,
-		Title:    "Project fund",
-		Subtitle: fmt.Sprintf("%s raised of %s", core.FormatMoney(core.Money(p.FundedAmount), p.Currency), core.FormatMoney(core.Money(p.GoalAmount), p.Currency)),
-		Status:   "ACTIVE",
-		Currency: p.Currency,
+		ID:          fundNodeID,
+		Type:        NodeFund,
+		Title:       "Project fund",
+		Subtitle:    fmt.Sprintf("%s raised of %s", core.FormatMoney(core.Money(p.FundedAmount), p.Currency), core.FormatMoney(core.Money(p.GoalAmount), p.Currency)),
+		Status:      "ACTIVE",
+		Currency:    p.Currency,
 		AmountMinor: p.FundedAmount,
-		Detail: "Contributions are pooled in ImpactPay's ledger. Each milestone's funding is released only after its evidence is verified and the backend's release policy passes.",
+		Detail:      "Contributions are pooled in ImpactPay's ledger. Each milestone's funding is released only after its evidence is verified and the backend's release policy passes.",
 		Metrics: []Metric{
 			{Label: "Captured", Value: core.FormatMoney(core.Money(p.FundedAmount), p.Currency)},
 			{Label: "Awaiting release", Value: core.FormatMoney(core.Money(p.ReservedAmount), p.Currency)},
@@ -230,15 +230,15 @@ func (s *Service) Trace(ctx context.Context, donationID string) (*ProofGraph, er
 
 		msNodeID := fmt.Sprintf("milestone-%d", i+1)
 		g.Nodes = append(g.Nodes, Node{
-			ID:       msNodeID,
-			Type:     NodeMilestone,
-			Title:    fmt.Sprintf("%d. %s", m.Ordinal, m.Title),
-			Subtitle: m.Requirement,
-			Status:   string(m.Status),
-			Verified: verified,
+			ID:          msNodeID,
+			Type:        NodeMilestone,
+			Title:       fmt.Sprintf("%d. %s", m.Ordinal, m.Title),
+			Subtitle:    m.Requirement,
+			Status:      string(m.Status),
+			Verified:    verified,
 			AmountMinor: funding.Amount,
-			Currency: p.Currency,
-			Detail:   m.Description,
+			Currency:    p.Currency,
+			Detail:      m.Description,
 			Metrics: []Metric{
 				{Label: "Your share", Value: core.FormatMoney(core.Money(funding.Amount), p.Currency)},
 				{Label: "Milestone budget", Value: core.FormatMoney(core.Money(m.BudgetAmount), p.Currency)},
@@ -361,7 +361,7 @@ func (s *Service) Trace(ctx context.Context, donationID string) (*ProofGraph, er
 			Verified: verified,
 			Currency: p.Currency,
 			Detail:   outcomeDetail(verified, m, *p, unitsFromDonation, perUnit),
-			Metrics: outcomeMetrics(verified, m, unitsFromDonation, beneficiaries),
+			Metrics:  outcomeMetrics(verified, m, unitsFromDonation, beneficiaries),
 		})
 		g.Edges = append(g.Edges, Edge{From: msNodeID, To: outcomeNodeID, Label: "achieved"})
 

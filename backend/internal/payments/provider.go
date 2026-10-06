@@ -35,12 +35,12 @@ type Amount struct {
 
 // OrderRequest creates a funding order for a donation.
 type OrderRequest struct {
-	DonationID string
-	Amount     Amount
-	ProjectRef string
+	DonationID  string
+	Amount      Amount
+	ProjectRef  string
 	Description string
-	ReturnURL  string
-	CancelURL  string
+	ReturnURL   string
+	CancelURL   string
 }
 
 // Order is a provider order.

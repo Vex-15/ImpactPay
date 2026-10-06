@@ -26,6 +26,7 @@ import (
 	"github.com/impactpay/backend/internal/config"
 	"github.com/impactpay/backend/internal/core"
 	"github.com/impactpay/backend/internal/db"
+	"github.com/impactpay/backend/internal/donations"
 	"github.com/impactpay/backend/internal/evidence"
 	"github.com/impactpay/backend/internal/impact"
 	"github.com/impactpay/backend/internal/milestones"
@@ -48,10 +49,15 @@ type Deps struct {
 	Projects      *projects.Service
 	Milestones    *milestones.Service
 	Evidence      *evidence.Service
+	Donations     *donations.Service
 	Verification  *verification.Service
 	Payments      *payments.Service
 	Impact        *impact.Service
 	Notifications *notifications.Service
+
+	// Answerer optionally rephrases grounded impact answers for readability. It
+	// can never change a figure, a citation or the grounding flag, and may be nil.
+	Answerer impact.Answerer
 }
 
 // Server handles HTTP requests.
@@ -88,6 +94,10 @@ func (s *Server) routes() *chi.Mux {
 	}))
 
 	r.Route("/api", func(api chi.Router) {
+		// Public routes still resolve a session when one is present, so a page can
+		// adapt ("manage this project") without a second round trip.
+		api.Use(s.optionalAuth)
+
 		api.Get("/health", s.handleHealth)
 		api.Get("/meta", s.handleMeta)
 
@@ -197,6 +207,28 @@ func (s *Server) requireAuth(next http.Handler) http.Handler {
 			return
 		}
 
+		actor := models.Actor{ID: user.ID, Role: user.Role, Label: user.FullName + " <" + user.Email + ">"}
+		ctx := models.WithActor(r.Context(), actor)
+		ctx = context.WithValue(ctx, ctxUser, user)
+		ctx = context.WithValue(ctx, ctxSessionToken, token)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// optionalAuth attaches the signed-in user when a valid session is present and
+// otherwise continues anonymously.
+func (s *Server) optionalAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := s.sessionToken(r)
+		if token == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		user, _, err := s.Auth.SessionUser(r.Context(), token)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
 		actor := models.Actor{ID: user.ID, Role: user.Role, Label: user.FullName + " <" + user.Email + ">"}
 		ctx := models.WithActor(r.Context(), actor)
 		ctx = context.WithValue(ctx, ctxUser, user)
@@ -377,8 +409,8 @@ func isValidationError(err error) bool {
 		donations.ErrAmountInvalid, donations.ErrAmountTooSmall, donations.ErrAmountTooLarge,
 		donations.ErrProjectClosed, donations.ErrSelfDonation,
 		payments.ErrOrderNotCreated, payments.ErrNotCaptured, payments.ErrRefundNotAllowed,
-		payments.ErrCaptureAmountMismatch, payments.ErrUnknownDecision,
-		verification.ErrNoEvidence,
+		payments.ErrCaptureAmountMismatch,
+		verification.ErrNoEvidence, verification.ErrUnknownDecision,
 	}
 	for _, t := range targets {
 		if errors.Is(err, t) {

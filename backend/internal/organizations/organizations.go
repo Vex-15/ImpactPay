@@ -310,11 +310,11 @@ func (s *Service) scan(row rowScanner) (*models.Organization, error) {
 
 func (s *Service) scanRows(row rowScanner) (*models.Organization, error) {
 	var (
-		org                          models.Organization
-		verificationStatus           string
-		reviewedBy, reviewedAt       sql.NullString
-		createdAt, updatedAt         string
-		verified                     int
+		org                    models.Organization
+		verificationStatus     string
+		reviewedBy, reviewedAt sql.NullString
+		createdAt, updatedAt   string
+		verified               int
 	)
 	if err := row.Scan(
 		&org.ID, &org.UserID, &org.Name, &org.Slug, &org.Mission, &org.Description,

@@ -60,18 +60,18 @@ func (s *Service) buildRelease(ctx context.Context, milestoneID string) (*models
 	fx := s.convertToAccount(decision.AmountMinor, p.Currency)
 
 	record := &models.MilestonePayment{
-		ID:            core.NewID(),
-		MilestoneID:   m.ID,
-		ProjectID:     p.ID,
-		OrgID:         org.ID,
-		Kind:          models.PaymentRelease,
-		Amount:        decision.AmountMinor,
-		Currency:      p.Currency,
-		Status:        models.MsPaymentPending,
-		Provider:      s.provider.Name(),
-		PolicyChecks:  decision.Checks,
-		Simulated:     s.provider.Simulated(),
-		CreatedAt:     core.Now(),
+		ID:           core.NewID(),
+		MilestoneID:  m.ID,
+		ProjectID:    p.ID,
+		OrgID:        org.ID,
+		Kind:         models.PaymentRelease,
+		Amount:       decision.AmountMinor,
+		Currency:     p.Currency,
+		Status:       models.MsPaymentPending,
+		Provider:     s.provider.Name(),
+		PolicyChecks: decision.Checks,
+		Simulated:    s.provider.Simulated(),
+		CreatedAt:    core.Now(),
 	}
 	if !decision.Allowed {
 		record.Status = models.MsPaymentBlocked
@@ -121,10 +121,10 @@ func (s *Service) ReleaseMilestone(ctx context.Context, milestoneID string, acto
 				ProjectID:   record.ProjectID,
 				MilestoneID: record.MilestoneID,
 				Severity:    "warning",
-				Summary: fmt.Sprintf("Milestone funding release blocked: %s", decision.BlockedReason),
+				Summary:     fmt.Sprintf("Milestone funding release blocked: %s", decision.BlockedReason),
 				Data: map[string]any{
-					"checks":         decision.Checks,
-					"blocked_reason": decision.BlockedReason,
+					"checks":          decision.Checks,
+					"blocked_reason":  decision.BlockedReason,
 					"attempted_minor": record.Amount,
 				},
 				Actor: &actor,
@@ -142,11 +142,12 @@ func (s *Service) ReleaseMilestone(ctx context.Context, milestoneID string, acto
 		return nil, err
 	}
 
+	receiver := s.payoutReceiver(ctx, record.OrgID)
 	payout, err := s.provider.Payout(ctx, PayoutRequest{
 		MilestoneID: m.ID,
 		Amount:      Amount{Minor: fx.AccountMinor, Currency: fx.ToCurrency},
-		Receiver:    s.payoutReceiver(ctx, record.OrgID),
-		Note: fmt.Sprintf("ImpactPay milestone %d release: %s", m.Ordinal, core.Truncate(m.Title, 120)),
+		Receiver:    receiver,
+		Note:        fmt.Sprintf("ImpactPay milestone %d release: %s", m.Ordinal, core.Truncate(m.Title, 120)),
 	}, "release-"+m.ID)
 	if err != nil {
 		record.Status = models.MsPaymentFailed
@@ -176,6 +177,10 @@ func (s *Service) ReleaseMilestone(ctx context.Context, milestoneID string, acto
 		}
 		return record, fmt.Errorf("payments: release payout: %w", err)
 	}
+
+	// Resolved before the transaction opens: the release writes several rows and
+	// must not open a second database handle while it holds the write connection.
+	payoutOrg, payoutOrgErr := s.orgs.ByID(ctx, record.OrgID)
 
 	record.PayPalRef = payout.PayoutID
 	record.PayPalStatus = payout.Status
@@ -209,7 +214,7 @@ func (s *Service) ReleaseMilestone(ctx context.Context, milestoneID string, acto
 			Amount: record.Amount, Currency: record.Currency, Status: payout.Status,
 			Detail: fmt.Sprintf("Released %s to %s (%s %s at an indicative rate of %.2f)",
 				core.FormatMoney(core.Money(record.Amount), record.Currency),
-				s.payoutReceiver(ctx, record.OrgID),
+				receiver,
 				core.FormatMoney(core.Money(fx.AccountMinor), fx.ToCurrency),
 				fx.ToCurrency, fx.Rate),
 			Simulated: payout.Simulated,
@@ -225,23 +230,22 @@ func (s *Service) ReleaseMilestone(ctx context.Context, milestoneID string, acto
 			Summary: fmt.Sprintf("Released %s for milestone '%s'",
 				core.FormatMoney(core.Money(record.Amount), record.Currency), m.Title),
 			Data: map[string]any{
-				"amount_minor":      record.Amount,
-				"account_amount":    fx.AccountMinor,
-				"account_currency":  fx.ToCurrency,
-				"rate":              fx.Rate,
-				"payout_ref":        payout.PayoutID,
-				"provider":          s.provider.Name(),
-				"simulated":         payout.Simulated,
-				"policy_checks":     decision.Checks,
+				"amount_minor":     record.Amount,
+				"account_amount":   fx.AccountMinor,
+				"account_currency": fx.ToCurrency,
+				"rate":             fx.Rate,
+				"payout_ref":       payout.PayoutID,
+				"provider":         s.provider.Name(),
+				"simulated":        payout.Simulated,
+				"policy_checks":    decision.Checks,
 			},
 			Actor: &actor,
 		}); err != nil {
 			return err
 		}
 
-		org, oerr := s.orgs.ByID(ctx, record.OrgID)
-		if oerr == nil {
-			_ = s.notifications.Notify(ctx, tx, org.UserID, "payment",
+		if payoutOrgErr == nil && payoutOrg != nil {
+			_ = s.notifications.Notify(ctx, tx, payoutOrg.UserID, "payment",
 				"Milestone funding released",
 				fmt.Sprintf("%s was released for milestone '%s'.",
 					core.FormatMoney(core.Money(record.Amount), record.Currency), m.Title),

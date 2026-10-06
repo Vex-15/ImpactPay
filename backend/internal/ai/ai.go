@@ -85,20 +85,20 @@ func (c *Client) Narrate(ctx context.Context, in VerificationFacts, res models.V
 	}
 
 	payload := map[string]any{
-		"project":          in.ProjectTitle,
-		"milestone":        in.MilestoneTitle,
-		"unit_label":       res.UnitLabel,
-		"claim":            in.Claim,
+		"project":           in.ProjectTitle,
+		"milestone":         in.MilestoneTitle,
+		"unit_label":        res.UnitLabel,
+		"claim":             in.Claim,
 		"required_quantity": res.RequiredQuantity,
 		"verified_quantity": res.VerifiedQuantity,
-		"evidence_count":   res.EvidenceCount,
-		"usable_count":     res.UsableCount,
-		"duplicate_count":  res.DuplicateCount,
-		"missing_evidence": res.MissingEvidence,
-		"inconsistencies":  res.Inconsistencies,
-		"financial":        res.Financial,
-		"recommendation":   res.Recommendation,
-		"confidence":       res.Confidence,
+		"evidence_count":    res.EvidenceCount,
+		"usable_count":      res.UsableCount,
+		"duplicate_count":   res.DuplicateCount,
+		"missing_evidence":  res.MissingEvidence,
+		"inconsistencies":   res.Inconsistencies,
+		"financial":         res.Financial,
+		"recommendation":    res.Recommendation,
+		"confidence":        res.Confidence,
 	}
 
 	prompt := "Write a 2-4 sentence verification summary for an ImpactPay administrator from these facts. " +

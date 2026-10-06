@@ -15,68 +15,68 @@ import (
 // record that matter, and ImpactPay would rather publish the underlying counts —
 // including the unresolved discrepancies — than summarise them away.
 type Passport struct {
-	Organization        PassportOrg            `json:"organization"`
-	ProjectsTotal       int                    `json:"projects_total"`
-	ProjectsCompleted   int                    `json:"projects_completed"`
-	ProjectsActive      int                    `json:"projects_active"`
-	FundsRaisedMinor    int64                  `json:"funds_raised_minor"`
-	Currency            string                 `json:"currency"`
-	MilestonesTotal     int                    `json:"milestones_total"`
-	MilestonesCompleted int                    `json:"milestones_completed"`
-	MilestonesVerified  int                    `json:"milestones_verified"`
-	MilestonesHeld      int                    `json:"milestones_held"`
-	EvidenceCompleteness float64               `json:"evidence_completeness"`
-	EvidenceRequired    int                    `json:"evidence_required"`
-	EvidenceSupplied    int                    `json:"evidence_supplied"`
-	DuplicateArtefacts  int                    `json:"duplicate_artefacts"`
-	ContributionsCount  int                    `json:"contributions_count"`
-	SupporterCount      int                    `json:"supporter_count"`
-	UnresolvedFindings  int                    `json:"unresolved_findings"`
-	VerificationMix     map[string]int         `json:"verification_mix"`
-	Projects            []PassportProject      `json:"projects"`
-	AverageConfidence   float64                `json:"average_confidence"`
+	Organization         PassportOrg       `json:"organization"`
+	ProjectsTotal        int               `json:"projects_total"`
+	ProjectsCompleted    int               `json:"projects_completed"`
+	ProjectsActive       int               `json:"projects_active"`
+	FundsRaisedMinor     int64             `json:"funds_raised_minor"`
+	Currency             string            `json:"currency"`
+	MilestonesTotal      int               `json:"milestones_total"`
+	MilestonesCompleted  int               `json:"milestones_completed"`
+	MilestonesVerified   int               `json:"milestones_verified"`
+	MilestonesHeld       int               `json:"milestones_held"`
+	EvidenceCompleteness float64           `json:"evidence_completeness"`
+	EvidenceRequired     int               `json:"evidence_required"`
+	EvidenceSupplied     int               `json:"evidence_supplied"`
+	DuplicateArtefacts   int               `json:"duplicate_artefacts"`
+	ContributionsCount   int               `json:"contributions_count"`
+	SupporterCount       int               `json:"supporter_count"`
+	UnresolvedFindings   int               `json:"unresolved_findings"`
+	VerificationMix      map[string]int    `json:"verification_mix"`
+	Projects             []PassportProject `json:"projects"`
+	AverageConfidence    float64           `json:"average_confidence"`
 }
 
 // PassportOrg is the organization header.
 type PassportOrg struct {
-	ID                 string                             `json:"id"`
-	Name               string                             `json:"name"`
-	Slug               string                             `json:"slug"`
-	Mission            string                             `json:"mission"`
-	Description        string                             `json:"description"`
-	Country            string                             `json:"country"`
-	Website            string                             `json:"website"`
+	ID                 string                                `json:"id"`
+	Name               string                                `json:"name"`
+	Slug               string                                `json:"slug"`
+	Mission            string                                `json:"mission"`
+	Description        string                                `json:"description"`
+	Country            string                                `json:"country"`
+	Website            string                                `json:"website"`
 	VerificationStatus models.OrganizationVerificationStatus `json:"verification_status"`
-	Verified           bool                               `json:"verified"`
-	ReviewNote         string                             `json:"review_note"`
-	MemberSince        string                             `json:"member_since"`
+	Verified           bool                                  `json:"verified"`
+	ReviewNote         string                                `json:"review_note"`
+	MemberSince        string                                `json:"member_since"`
 }
 
 // PassportProject is one project row on the passport.
 type PassportProject struct {
-	ID                string        `json:"id"`
-	Title             string        `json:"title"`
-	Slug              string        `json:"slug"`
-	Category          string        `json:"category"`
-	Status            models.ProjectStatus `json:"status"`
-	GoalAmount        int64         `json:"goal_amount"`
-	FundedAmount      int64         `json:"funded_amount"`
-	ReleasedAmount    int64         `json:"released_amount"`
-	BeneficiaryCount  int           `json:"beneficiary_count"`
-	MilestonesTotal   int           `json:"milestones_total"`
-	MilestonesVerified int          `json:"milestones_verified"`
-	EvidenceCompleteness float64    `json:"evidence_completeness"`
-	UnresolvedFindings int          `json:"unresolved_findings"`
-	Currency          string        `json:"currency"`
+	ID                   string               `json:"id"`
+	Title                string               `json:"title"`
+	Slug                 string               `json:"slug"`
+	Category             string               `json:"category"`
+	Status               models.ProjectStatus `json:"status"`
+	GoalAmount           int64                `json:"goal_amount"`
+	FundedAmount         int64                `json:"funded_amount"`
+	ReleasedAmount       int64                `json:"released_amount"`
+	BeneficiaryCount     int                  `json:"beneficiary_count"`
+	MilestonesTotal      int                  `json:"milestones_total"`
+	MilestonesVerified   int                  `json:"milestones_verified"`
+	EvidenceCompleteness float64              `json:"evidence_completeness"`
+	UnresolvedFindings   int                  `json:"unresolved_findings"`
+	Currency             string               `json:"currency"`
 }
 
 // BuildPassport assembles an organization's passport.
 func (s *Service) BuildPassport(ctx context.Context, orgID string) (*Passport, error) {
 	var (
-		org        PassportOrg
-		status     string
-		verified   int
-		createdAt  string
+		org       PassportOrg
+		status    string
+		verified  int
+		createdAt string
 	)
 	err := s.db.QueryRowContext(ctx, `
 		SELECT id, name, slug, mission, description, country, website,
@@ -158,9 +158,9 @@ func (s *Service) BuildPassport(ctx context.Context, orgID string) (*Passport, e
 		idx := 0
 		for msRows.Next() {
 			var (
-				st         string
-				verifiedQ  int
-				requiredQ  int
+				st        string
+				verifiedQ int
+				requiredQ int
 			)
 			if err := msRows.Scan(&st, &verifiedQ, &requiredQ); err != nil {
 				_ = msRows.Close()

@@ -12,6 +12,7 @@
 package extract
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -86,14 +87,68 @@ func extractImage(facts *models.ExtractedFacts, filename, contentType string, da
 		facts.Quality = "ok"
 	}
 
-	// Photographs frequently carry an OCR-able caption block. Scan the tail of
-	// the file for identifier tokens when the format allows it.
-	if text := printableText(data); text != "" {
-		if ids := ScanUnitIDs(text); len(ids) > 0 {
+	// Photographs frequently carry a caption written by the field application.
+	// Only *structured* metadata is read: scraping the raw image bytes would
+	// happily turn compression noise into imaginary asset serial numbers, and a
+	// verification agent that counts noise is worse than one that counts nothing.
+	if caption := imageCaption(data); caption != "" {
+		facts.Notes = append(facts.Notes, "Read caption metadata from the image")
+		if ids := ScanUnitIDs(caption); len(ids) > 0 {
 			facts.UnitIDs = append(facts.UnitIDs, ids...)
-			facts.Notes = append(facts.Notes, fmt.Sprintf("Read %d identifier token(s) from embedded caption text", len(ids)))
+			facts.Notes = append(facts.Notes, fmt.Sprintf("Read %d identifier token(s) from the caption", len(ids)))
 		}
 	}
+}
+
+// imageCaption returns the text of a PNG's tEXt / iTXt metadata chunks.
+//
+// PNG is the format ImpactPay's own field application writes, and its metadata
+// chunks are self-describing, so the caption can be read exactly rather than
+// guessed at. Other image containers are supported for storage and quality
+// assessment but carry no readable caption; their asset identifiers must be
+// supplied by the uploader.
+func imageCaption(data []byte) string {
+	if len(data) < 8 || string(data[1:4]) != "PNG" {
+		return ""
+	}
+	var b strings.Builder
+	i := 8 // skip the 8-byte signature
+	for i+8 <= len(data) {
+		length := int(be32(data[i : i+4]))
+		chunkType := string(data[i+4 : i+8])
+		start := i + 8
+		end := start + length
+		if length < 0 || end+4 > len(data) {
+			break
+		}
+		payload := data[start:end]
+
+		switch chunkType {
+		case "tEXt":
+			if k := bytes.IndexByte(payload, 0); k >= 0 && k+1 <= len(payload) {
+				b.Write(payload[k+1:])
+				b.WriteByte('\n')
+			}
+		case "iTXt":
+			// keyword \0 compressionFlag compressionMethod languageTag \0
+			// translatedKeyword \0 text
+			k := bytes.IndexByte(payload, 0)
+			if k >= 0 && k+3 <= len(payload) && payload[k+1] == 0 {
+				rest := payload[k+3:]
+				if j := bytes.IndexByte(rest, 0); j >= 0 {
+					rest = rest[j+1:]
+					if m := bytes.IndexByte(rest, 0); m >= 0 {
+						b.Write(rest[m+1:])
+						b.WriteByte('\n')
+					}
+				}
+			}
+		case "IEND":
+			return b.String()
+		}
+		i = end + 4 // skip the CRC
+	}
+	return b.String()
 }
 
 // imageDimensions pulls width/height from PNG, JPEG or WebP headers.
@@ -150,12 +205,12 @@ func jpegDimensions(data []byte) (int, int, bool) {
 // ---------------------------------------------------------------------------
 
 var (
-	reInvoiceNo = regexp.MustCompile(`(?im)^\s*(?:invoice|bill)\s*(?:no|number|#|id)?\s*[:.\-]?\s*([A-Za-z0-9][A-Za-z0-9\-\/]{2,})`)
-	reVendor    = regexp.MustCompile(`(?im)^\s*(?:vendor|supplier|seller|billed\s*by|from)\s*[:.\-]?\s*(.+?)\s*$`)
-	reDate      = regexp.MustCompile(`(?im)^\s*(?:date|issued(?:\s*on)?|invoice\s*date)\s*[:.\-]?\s*(\d{4}-\d{2}-\d{2}|\d{2}[\/\-]\d{2}[\/\-]\d{4})`)
-	reTotal     = regexp.MustCompile(`(?im)^\s*(?:grand\s*total|total\s*amount|total|amount\s*due|amount)\s*[:.\-]?\s*((?:INR|USD|EUR|GBP|\u20b9|\$)?\s*[\d][\d,\s]*(?:\.\d{1,2})?)`)
-	reQuantity  = regexp.MustCompile(`(?im)^\s*(?:qty|quantity|units?|no\.?\s*of\s*units?|count)\s*[:.\-]?\s*([\d][\d,]*)`)
-	reUnitIDLn  = regexp.MustCompile(`(?im)^\s*(?:unit\s*ids?|serial\s*(?:no|numbers?)?|asset\s*ids?|device\s*ids?)\s*[:.\-]?\s*(.+)$`)
+	reInvoiceNo     = regexp.MustCompile(`(?im)^\s*(?:invoice|bill)\s*(?:no|number|#|id)?\s*[:.\-]?\s*([A-Za-z0-9][A-Za-z0-9\-\/]{2,})`)
+	reVendor        = regexp.MustCompile(`(?im)^\s*(?:vendor|supplier|seller|billed\s*by|from)\s*[:.\-]?\s*(.+?)\s*$`)
+	reDate          = regexp.MustCompile(`(?im)^\s*(?:date|issued(?:\s*on)?|invoice\s*date)\s*[:.\-]?\s*(\d{4}-\d{2}-\d{2}|\d{2}[\/\-]\d{2}[\/\-]\d{4})`)
+	reTotal         = regexp.MustCompile(`(?im)^\s*(?:grand\s*total|total\s*amount|total|amount\s*due|amount)\s*[:.\-]?\s*((?:INR|USD|EUR|GBP|\x{20B9}|\$)?\s*[\d][\d,\s]*(?:\.\d{1,2})?)`)
+	reQuantity      = regexp.MustCompile(`(?im)^\s*(?:qty|quantity|units?|no\.?\s*of\s*units?|count)\s*[:.\-]?\s*([\d][\d,]*)`)
+	reUnitIDLn      = regexp.MustCompile(`(?im)^\s*(?:unit\s*ids?|serial\s*(?:no|numbers?)?|asset\s*ids?|device\s*ids?)\s*[:.\-]?\s*(.+)$`)
 	reBeneficiaries = regexp.MustCompile(`(?im)^\s*(?:beneficiaries|households|families|people\s*served|persons?)\s*[:.\-]?\s*([\d][\d,]*)`)
 	reVillages      = regexp.MustCompile(`(?im)^\s*(?:villages?|sites?|locations?)\s*[:.\-]?\s*(.+)$`)
 )
@@ -283,10 +338,15 @@ var reRowID = regexp.MustCompile(`\b[A-Z]{2,6}-[A-Z0-9]{1,4}-?\d{2,6}\b`)
 // Identifier scanning
 // ---------------------------------------------------------------------------
 
-// reUnitToken matches asset identifiers of the form CW-MH-0001, FILT-0042 or
-// UNIT/2026/0099. It intentionally requires at least two letters, a separator
-// and at least two digits so that ordinary prose never looks like an asset.
-var reUnitToken = regexp.MustCompile(`\b[A-Z]{2,8}(?:[-/_][A-Z0-9]{1,6}){1,3}[-/_]?\d{2,6}\b`)
+// reUnitToken matches asset identifiers of the form CW-MH-0001, SUR-KAN-001 or
+// UNIT/2026/0099.
+//
+// The shape is deliberately strict: two to eight leading letters, then a
+// mandatory alphabetic group after a separator, then at most two further groups,
+// and finally a numeric suffix. Requiring that second alphabetic segment is what
+// keeps ordinary product model numbers such as "HF-100" from being counted as
+// installed units, while still matching every serial scheme ImpactPay uses.
+var reUnitToken = regexp.MustCompile(`\b[A-Z]{2,8}[-/_][A-Z]{2,6}(?:[-/_][A-Z0-9]{1,6}){0,2}[-/_]?\d{2,6}\b`)
 
 // ScanUnitIDs extracts unique, ordered asset identifiers from free text.
 func ScanUnitIDs(text string) []string {

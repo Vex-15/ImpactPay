@@ -40,11 +40,11 @@ func abs(n int64) int64 {
 
 // PurchaseUnit is one funding unit inside an order.
 type PurchaseUnit struct {
-	ReferenceID string         `json:"reference_id,omitempty"`
-	CustomID    string         `json:"custom_id,omitempty"`
-	Description string         `json:"description,omitempty"`
-	Amount      Money          `json:"amount"`
-	Payee       *Payee         `json:"payee,omitempty"`
+	ReferenceID string `json:"reference_id,omitempty"`
+	CustomID    string `json:"custom_id,omitempty"`
+	Description string `json:"description,omitempty"`
+	Amount      Money  `json:"amount"`
+	Payee       *Payee `json:"payee,omitempty"`
 }
 
 // Payee is the receiving account for a purchase unit.
@@ -110,11 +110,11 @@ func (c *Client) GetOrder(ctx context.Context, orderID string) (*Order, error) {
 
 // Capture is one capture inside a capture response.
 type Capture struct {
-	ID            string `json:"id"`
-	Status        string `json:"status"`
-	Amount        Money  `json:"amount"`
-	FinalCapture  bool   `json:"final_capture"`
-	CreateTime    string `json:"create_time"`
+	ID                        string `json:"id"`
+	Status                    string `json:"status"`
+	Amount                    Money  `json:"amount"`
+	FinalCapture              bool   `json:"final_capture"`
+	CreateTime                string `json:"create_time"`
 	SellerReceivableBreakdown struct {
 		GrossAmount Money `json:"gross_amount"`
 		PayPalFee   Money `json:"paypal_fee"`
@@ -124,19 +124,19 @@ type Capture struct {
 
 // CaptureResult is the outcome of capturing an order.
 type CaptureResult struct {
-	ID            string `json:"id"`
-	Status        string `json:"status"`
-	OrderID       string `json:"-"`
-	Payer         struct {
-		PayerID     string `json:"payer_id"`
+	ID      string `json:"id"`
+	Status  string `json:"status"`
+	OrderID string `json:"-"`
+	Payer   struct {
+		PayerID      string `json:"payer_id"`
 		EmailAddress string `json:"email_address"`
-		Name        struct {
+		Name         struct {
 			GivenName string `json:"given_name"`
 			Surname   string `json:"surname"`
 		} `json:"name"`
 	} `json:"payer"`
 	PurchaseUnits []struct {
-		ReferenceID string    `json:"reference_id"`
+		ReferenceID string `json:"reference_id"`
 		Payments    struct {
 			Captures []Capture `json:"captures"`
 		} `json:"payments"`
@@ -252,10 +252,10 @@ type WebhookEvent struct {
 	CreateTime   string `json:"create_time"`
 	ResourceType string `json:"resource_type"`
 	Resource     struct {
-		ID            string `json:"id"`
-		Status        string `json:"status"`
-		Amount        Money  `json:"amount"`
-		CustomID      string `json:"custom_id"`
+		ID                string `json:"id"`
+		Status            string `json:"status"`
+		Amount            Money  `json:"amount"`
+		CustomID          string `json:"custom_id"`
 		SupplementaryData struct {
 			RelatedIDs struct {
 				OrderID   string `json:"order_id"`

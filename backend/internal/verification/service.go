@@ -179,6 +179,14 @@ func (s *Service) VerifyMilestone(ctx context.Context, milestoneID string, actor
 		return nil, err
 	}
 
+	// An approval reserves the milestone's budget against captured funding so the
+	// payments service can later release exactly what was promised. Reservations
+	// are recomputed for both AI and human approvals, so the two paths leave the
+	// project's funding counters in the same state.
+	if err := s.syncPaymentEligibility(ctx, m, res.Recommendation); err != nil {
+		return nil, err
+	}
+
 	return &Result{Verification: *v, Result: res}, nil
 }
 
@@ -254,7 +262,7 @@ func (s *Service) Override(ctx context.Context, verificationID string, decision 
 			ProjectID:   v.ProjectID,
 			MilestoneID: v.MilestoneID,
 			Severity:    "warning",
-			Summary: fmt.Sprintf("Admin overrode AI recommendation %s with %s: %s", v.Recommendation, decision, core.Truncate(note, 160)),
+			Summary:     fmt.Sprintf("Admin overrode AI recommendation %s with %s: %s", v.Recommendation, decision, core.Truncate(note, 160)),
 			Data: map[string]any{
 				"ai_recommendation": string(v.Recommendation),
 				"human_decision":    string(decision),
@@ -485,22 +493,28 @@ func (s *Service) scanRows(row rowScanner) (*models.Verification, error) {
 
 func scanVerificationColumns(row rowScanner) (*models.Verification, error) {
 	var (
-		v                    models.Verification
-		status, recommendation string
+		v                                                         models.Verification
+		status, recommendation                                    string
 		claimed, found, inc, missing, checks, resultJSON, summary string
-		isOverride           int
-		humanDecision        sql.NullString
-		decidedAt            sql.NullString
-		createdAt            string
+		isOverride                                                int
+		// human_decision, decided_by and decided_at are NULL until a human
+		// override happens, so every one of them is scanned as a nullable column.
+		humanDecision sql.NullString
+		humanNote     sql.NullString
+		decidedBy     sql.NullString
+		decidedAt     sql.NullString
+		createdAt     string
 	)
 	if err := row.Scan(
 		&v.ID, &v.MilestoneID, &v.ProjectID, &v.SubmissionID, &status, &recommendation,
 		&v.VerifiedQuantity, &v.RequiredQuantity, &v.UnitLabel, &v.Confidence, &claimed,
 		&found, &inc, &missing, &checks, &resultJSON, &summary, &v.Engine, &v.Model,
-		&isOverride, &humanDecision, &v.HumanNote, &v.DecidedBy, &decidedAt, &createdAt,
+		&isOverride, &humanDecision, &humanNote, &decidedBy, &decidedAt, &createdAt,
 	); err != nil {
 		return nil, err
 	}
+	v.HumanNote = humanNote.String
+	v.DecidedBy = decidedBy.String
 	v.Status = models.VerificationDecision(status)
 	v.Recommendation = models.VerificationDecision(recommendation)
 	v.Summary = summary

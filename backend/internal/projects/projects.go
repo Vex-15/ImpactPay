@@ -27,14 +27,14 @@ import (
 
 // Sentinel errors.
 var (
-	ErrNotFound       = errors.New("project not found")
-	ErrTitleRequired  = errors.New("project title is required")
-	ErrGoalRequired   = errors.New("funding goal must be greater than zero")
-	ErrOutcomeRequired = errors.New("outcome description is required")
-	ErrNoMilestones   = errors.New("a project needs at least one milestone")
+	ErrNotFound          = errors.New("project not found")
+	ErrTitleRequired     = errors.New("project title is required")
+	ErrGoalRequired      = errors.New("funding goal must be greater than zero")
+	ErrOutcomeRequired   = errors.New("outcome description is required")
+	ErrNoMilestones      = errors.New("a project needs at least one milestone")
 	ErrBudgetExceedsGoal = errors.New("milestone budgets exceed the funding goal")
-	ErrSlugTaken      = errors.New("a project with that name already exists")
-	ErrNotOwner       = errors.New("you do not have access to this project")
+	ErrSlugTaken         = errors.New("a project with that name already exists")
+	ErrNotOwner          = errors.New("you do not have access to this project")
 )
 
 // Service provides project operations.
@@ -595,10 +595,10 @@ func (s *Service) scan(row rowScanner) (*models.Project, error) {
 
 func (s *Service) scanRows(row rowScanner) (*models.Project, error) {
 	var (
-		p                              models.Project
-		status                         string
-		createdAt, updatedAt           string
-		publishedAt, completedAt       sql.NullString
+		p                        models.Project
+		status                   string
+		createdAt, updatedAt     string
+		publishedAt, completedAt sql.NullString
 	)
 	if err := row.Scan(
 		&p.ID, &p.OrgID, &p.Title, &p.Slug, &p.Category, &p.Summary, &p.Problem,

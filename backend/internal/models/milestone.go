@@ -26,24 +26,24 @@ func (s MilestoneStatus) Terminal() bool {
 
 // Milestone is one funded, verifiable unit of work inside a project.
 type Milestone struct {
-	ID                   string                 `json:"id"`
-	ProjectID            string                 `json:"project_id"`
-	Ordinal              int                    `json:"ordinal"`
-	Title                string                 `json:"title"`
-	Description          string                 `json:"description"`
-	Requirement          string                 `json:"requirement"`
-	UnitLabel            string                 `json:"unit_label"`
-	RequiredQuantity     int                    `json:"required_quantity"`
-	BudgetAmount         int64                  `json:"budget_amount"`
+	ID                   string                    `json:"id"`
+	ProjectID            string                    `json:"project_id"`
+	Ordinal              int                       `json:"ordinal"`
+	Title                string                    `json:"title"`
+	Description          string                    `json:"description"`
+	Requirement          string                    `json:"requirement"`
+	UnitLabel            string                    `json:"unit_label"`
+	RequiredQuantity     int                       `json:"required_quantity"`
+	BudgetAmount         int64                     `json:"budget_amount"`
 	EvidenceRequirements []EvidenceRequirementSpec `json:"evidence_requirements"`
-	Status               MilestoneStatus        `json:"status"`
-	VerifiedQuantity     int                    `json:"verified_quantity"`
-	CreatedAt            time.Time              `json:"created_at"`
-	UpdatedAt            time.Time              `json:"updated_at"`
-	StartedAt            *time.Time             `json:"started_at,omitempty"`
-	SubmittedAt          *time.Time             `json:"submitted_at,omitempty"`
-	DecidedAt            *time.Time             `json:"decided_at,omitempty"`
-	CompletedAt          *time.Time             `json:"completed_at,omitempty"`
+	Status               MilestoneStatus           `json:"status"`
+	VerifiedQuantity     int                       `json:"verified_quantity"`
+	CreatedAt            time.Time                 `json:"created_at"`
+	UpdatedAt            time.Time                 `json:"updated_at"`
+	StartedAt            *time.Time                `json:"started_at,omitempty"`
+	SubmittedAt          *time.Time                `json:"submitted_at,omitempty"`
+	DecidedAt            *time.Time                `json:"decided_at,omitempty"`
+	CompletedAt          *time.Time                `json:"completed_at,omitempty"`
 }
 
 // VerifiedRatio returns verified/required quantity in the range 0..1.
